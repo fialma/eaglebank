@@ -1,0 +1,98 @@
+package com.eaglebank.service;
+
+import com.eaglebank.dto.user.CreateUserRequest;
+import com.eaglebank.dto.user.UpdateUserRequest;
+import com.eaglebank.dto.user.UserResponse;
+import com.eaglebank.entity.User;
+import com.eaglebank.exception.UserHasAccountsException;
+import com.eaglebank.exception.UserNotFoundException;
+import com.eaglebank.repository.AccountRepository;
+import com.eaglebank.repository.UserRepository;
+import com.eaglebank.util.IdGenerator;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Service
+public class UserServiceImpl implements UserService{
+
+    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public UserResponse createUser(CreateUserRequest request) {
+        User user = new User();
+        user.setId(IdGenerator.generateUserId());
+        user.setName(request.getName());
+        user.setAddress(request.getAddress());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash the password
+        user.setCreatedTimestamp(LocalDateTime.now());
+        user.setUpdatedTimestamp(LocalDateTime.now());
+        User savedUser = userRepository.save(user);
+        return mapToUserResponse(savedUser);
+    }
+
+    public UserResponse getUserById(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        return mapToUserResponse(user);
+    }
+
+    public UserResponse getUserByEmail(String email){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        return mapToUserResponse(user);
+    }
+
+    @Transactional
+    public UserResponse updateUser(String userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        Optional.ofNullable(request.getName()).ifPresent(user::setName);
+        Optional.ofNullable(request.getAddress()).ifPresent(user::setAddress);
+        Optional.ofNullable(request.getPhoneNumber()).ifPresent(user::setPhoneNumber);
+        Optional.ofNullable(request.getEmail()).ifPresent(user::setEmail);
+        user.setUpdatedTimestamp(LocalDateTime.now());
+
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponse(updatedUser);
+    }
+
+    @Transactional
+    public void deleteUser(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        if (accountRepository.countByUser(user) > 0) {
+            throw new UserHasAccountsException("User cannot be deleted as they have associated bank accounts.");
+        }
+
+        userRepository.delete(user);
+    }
+
+    private UserResponse mapToUserResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setAddress(user.getAddress());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setEmail(user.getEmail());
+        response.setCreatedTimestamp(user.getCreatedTimestamp());
+        response.setUpdatedTimestamp(user.getUpdatedTimestamp());
+        return response;
+    }
+}
