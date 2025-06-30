@@ -7,6 +7,7 @@ import com.eaglebank.entity.Address;
 import com.eaglebank.entity.User;
 import com.eaglebank.exception.UserHasAccountsException;
 import com.eaglebank.exception.UserNotFoundException;
+import com.eaglebank.exception.UserWithEmailNotFoundException;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.UserRepository;
 import com.eaglebank.util.IdGenerator;
@@ -54,20 +55,20 @@ public class UserServiceImpl implements UserService{
 
     public UserResponse getUserById(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         return mapToUserResponse(user);
     }
 
     public UserResponse getUserByEmail(String email){
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new UserWithEmailNotFoundException(email));
         return mapToUserResponse(user);
     }
 
     @Transactional
     public UserResponse updateUser(String userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Optional.ofNullable(request.getName()).ifPresent(user::setName);
         Optional.ofNullable(request.getAddress())
@@ -82,10 +83,10 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (accountRepository.countByUser(user) > 0) {
-            throw new UserHasAccountsException("User cannot be deleted as they have associated bank accounts.");
+            throw new UserHasAccountsException();
         }
 
         userRepository.delete(user);

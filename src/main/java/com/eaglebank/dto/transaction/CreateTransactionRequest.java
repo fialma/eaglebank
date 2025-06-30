@@ -6,11 +6,13 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class CreateTransactionRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     @DecimalMax(value = "10000.00", message = "Amount cannot exceed 10000.00")
-    private double amount;
+    private BigDecimal amount;
 
     @NotNull(message = "Currency is required")
     private Transaction.Currency currency;

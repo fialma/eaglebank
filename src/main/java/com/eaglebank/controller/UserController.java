@@ -66,7 +66,7 @@ public class UserController {
     private String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new com.eaglebank.exception.UnauthorizedException("User is not authenticated");
+            throw new com.eaglebank.exception.UnauthorizedException();
         }
         // Assuming your UserDetailsImpl stores the userId as the username
         String email = ((UserDetails) authentication.getPrincipal()).getUsername();

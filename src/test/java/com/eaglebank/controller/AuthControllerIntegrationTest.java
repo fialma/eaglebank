@@ -91,13 +91,11 @@ class AuthControllerIntegrationTest {
         authRequest.setEmail(user1.getEmail());
         authRequest.setPassword("passwordWronng");
 
-        MvcResult authResult = mockMvc.perform(post("/v1/auth/login")
+        mockMvc.perform(post("/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Invalid email or password"))
-                .andReturn();
-
+                .andExpect(jsonPath("$.message").value("Invalid email or password"));
     }
 
 

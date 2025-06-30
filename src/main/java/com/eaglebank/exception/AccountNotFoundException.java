@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class AccountNotFoundException extends RuntimeException {
-    public AccountNotFoundException(String message) {
-        super(message);
+public class AccountNotFoundException extends EagleRuntimeException {
+    public AccountNotFoundException(String accountNumber, String userId) {
+        super("Bank account not found with account number: " + accountNumber + " for user: " + userId, HttpStatus.NOT_FOUND);
     }
 }

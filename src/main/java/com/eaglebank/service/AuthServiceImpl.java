@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
             String token = jwtService.generateToken(userDetails);
             return new AuthResponse(token);
         } catch (Exception e) {
-            throw new UnauthorizedException("Invalid email or password");
+            throw new UnauthorizedException();
         }
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
 
-    private double balance;
+    private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)
     private Currency currency;

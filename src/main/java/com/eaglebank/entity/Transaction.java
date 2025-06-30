@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 public class Transaction {
     @Id
     private String id; // e.g., tan-123abc
-    private double amount;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private Currency currency;

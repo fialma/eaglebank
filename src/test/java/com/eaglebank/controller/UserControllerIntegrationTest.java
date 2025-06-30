@@ -6,8 +6,10 @@ import com.eaglebank.dto.error.BadRequestErrorResponse;
 import com.eaglebank.dto.user.AddressDTO;
 import com.eaglebank.dto.user.CreateUserRequest;
 import com.eaglebank.dto.user.UpdateUserRequest;
+import com.eaglebank.entity.Account;
 import com.eaglebank.entity.Address;
 import com.eaglebank.entity.User;
+import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
@@ -43,7 +45,12 @@ class UserControllerIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    AccountRepository accountRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+
 
     private String user1Id;
     private String user2Id;
@@ -52,6 +59,7 @@ class UserControllerIntegrationTest {
     @BeforeEach
     void setUp() throws Exception {
         userRepository.deleteAll(); // Clean up before each test
+        accountRepository.deleteAll();
 
         // Create user 1
         User user1 = new User();
@@ -65,6 +73,12 @@ class UserControllerIntegrationTest {
         user1.setUpdatedTimestamp(java.time.LocalDateTime.now());
         userRepository.save(user1);
         this.user1Id = user1.getId();
+
+        Account account1 = new Account();
+        account1.setUser(user1);
+        account1.setAccountNumber("012345Test");
+
+        accountRepository.save(account1);
 
         // Create user 2
         User user2 = new User();
@@ -181,4 +195,16 @@ class UserControllerIntegrationTest {
         assertEquals("Updated Test Name", updatedUser.getName());
         assertEquals("+447999888777", updatedUser.getPhoneNumber());
     }
+
+    @Test
+    void deleteUserByID_UserHasAccountException_Returns409() throws Exception {
+
+        mockMvc.perform(delete("/v1/users/{userId}", user1Id)
+                        .header("Authorization", "Bearer " + user1Token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("User has associated account(s) and cannot be deleted."));
+    }
+
+
 }

@@ -17,6 +17,7 @@ import com.eaglebank.util.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,19 +38,19 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public TransactionResponse createTransaction(String accountNumber, String userId, CreateTransactionRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException("Bank account not found with account number: " + accountNumber + " for user: " + userId));
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
 
-        double newBalance = account.getBalance();
+        BigDecimal newBalance = account.getBalance();
         if (request.getType() == Transaction.TransactionType.deposit) {
-            newBalance += request.getAmount();
+            newBalance = newBalance.add(request.getAmount());
         } else { // withdrawal
-            if (account.getBalance() < request.getAmount()) {
-                throw new InsufficientFundsException("Insufficient funds for withdrawal. Current balance: " + account.getBalance());
+            if (account.getBalance().compareTo(request.getAmount()) < 0) {
+                throw new InsufficientFundsException(account.getBalance());
             }
-            newBalance -= request.getAmount();
+            newBalance = newBalance.subtract(request.getAmount());
         }
 
         account.setBalance(newBalance);
@@ -74,7 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException("Bank account not found with account number: " + accountNumber + " for user: " + userId));
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
 
         List<TransactionResponse> transactions = transactionRepository.findByAccount(account)
                 .stream()
@@ -90,10 +91,10 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException("Bank account not found with account number: " + accountNumber + " for user: " + userId));
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber,userId));
 
         Transaction transaction = transactionRepository.findByIdAndAccount(transactionId, account)
-                .orElseThrow(() -> new TransactionNotFoundException("Transaction not found with ID: " + transactionId + " for account: " + accountNumber));
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId, accountNumber));
         return mapToTransactionResponse(transaction);
     }
 

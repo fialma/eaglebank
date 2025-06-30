@@ -14,6 +14,7 @@ import com.eaglebank.util.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class AccountServiceImpl implements AccountService {
         account.setAccountNumber(IdGenerator.generateAccountNumber());
         account.setName(request.getName());
         account.setAccountType(request.getAccountType());
-        account.setBalance(0.00); // New accounts start with 0 balance
+        account.setBalance(new BigDecimal("0.00")); // New accounts start with 0 balance
         account.setCurrency(Account.Currency.GBP); // Default to GBP
         account.setUser(user);
         account.setCreatedTimestamp(LocalDateTime.now());
@@ -66,17 +67,17 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException("Bank account not found with account number: " + accountNumber + " for user: " + userId));
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
         return mapToBankAccountResponse(account);
     }
 
     @Transactional
     public BankAccountResponse updateAccount(String accountNumber, String userId, UpdateBankAccountRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException("Bank account not found with account number: " + accountNumber + " for user: " + userId));
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
 
         Optional.ofNullable(request.getName()).ifPresent(account::setName);
         Optional.ofNullable(request.getAccountType()).ifPresent(account::setAccountType);
@@ -92,7 +93,7 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException("Bank account not found with account number: " + accountNumber + " for user: " + userId));
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
 
         accountRepository.delete(account);
     }
