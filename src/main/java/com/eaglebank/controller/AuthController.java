@@ -3,8 +3,8 @@ package com.eaglebank.controller;
 import com.eaglebank.dto.Response;
 import com.eaglebank.dto.auth.AuthRequest;
 import com.eaglebank.dto.auth.AuthResponse;
-import com.eaglebank.dto.error.BadRequestErrorResponse;
-import com.eaglebank.dto.error.ErrorDetail;
+import com.eaglebank.dto.error.ErrorResponse;
+import com.eaglebank.exception.UnauthorizedException;
 import com.eaglebank.service.AuthService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/v1/auth")
@@ -34,11 +32,11 @@ public class AuthController {
         try {
             AuthResponse authResponse = authService.authenticateUser(request);
             return ResponseEntity.ok(authResponse);
+        }catch (UnauthorizedException e){
+            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.UNAUTHORIZED);
         }catch (Exception e){
-            var errorList = new ArrayList<ErrorDetail>();
-            errorList.add(new ErrorDetail(null, e.getMessage(), null));
-            return new ResponseEntity<>(new BadRequestErrorResponse("Unauthorized",
-                    errorList), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
 }

@@ -1,5 +1,6 @@
 package com.eaglebank.service;
 
+import com.eaglebank.dto.user.AddressDTO;
 import com.eaglebank.dto.user.CreateUserRequest;
 import com.eaglebank.dto.user.UpdateUserRequest;
 import com.eaglebank.dto.user.UserResponse;
@@ -10,15 +11,14 @@ import com.eaglebank.exception.UserNotFoundException;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.UserRepository;
 import com.eaglebank.util.IdGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -38,6 +38,9 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -62,11 +65,15 @@ class UserServiceImplTest {
         createUserRequest.setName("New User");
         createUserRequest.setEmail("new.user@example.com");
         createUserRequest.setPhoneNumber("+1122334455");
-        createUserRequest.setAddress(new Address("1 New St", null, null, "New Town", "New County", "NW1 1NW"));
+        createUserRequest.setAddress(new AddressDTO("1 New St", null, null, "New Town", "New County", "NW1 1NW"));
         createUserRequest.setPassword("rawPassword");
 
         updateUserRequest = new UpdateUserRequest();
         updateUserRequest.setName("Updated Name");
+
+        objectMapper = new ObjectMapper();
+        ReflectionTestUtils.setField(userService, "objectMapper", objectMapper);
+
     }
 
     @Test

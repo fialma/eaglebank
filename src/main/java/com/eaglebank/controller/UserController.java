@@ -1,5 +1,7 @@
 package com.eaglebank.controller;
 
+import com.eaglebank.dto.Response;
+import com.eaglebank.dto.error.ErrorResponse;
 import com.eaglebank.dto.user.CreateUserRequest;
 import com.eaglebank.dto.user.UpdateUserRequest;
 import com.eaglebank.dto.user.UserResponse;
@@ -10,13 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/v1/users")
 public class UserController {
 
     private final UserService userService;
+    private final String userNotAllowedMessage = "You are not allowed to access this user's details.";
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -29,31 +34,30 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponse> fetchUserByID(@PathVariable String userId) {
+    public ResponseEntity<Response> fetchUserByID(@PathVariable String userId) {
         String authenticatedUserId = getCurrentUserId();
         if (!authenticatedUserId.equals(userId)) {
-            // This is a simplified authorization. In a real app, you'd have roles/permissions.
-            throw new com.eaglebank.exception.ForbiddenException("You are not allowed to access this user's details.");
+            return new ResponseEntity<>(new ErrorResponse(userNotAllowedMessage), HttpStatus.FORBIDDEN);
         }
         UserResponse userResponse = userService.getUserById(userId);
         return ResponseEntity.ok(userResponse);
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<UserResponse> updateUserByID(@PathVariable String userId, @Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<Response> updateUserByID(@PathVariable String userId, @Valid @RequestBody UpdateUserRequest request) {
         String authenticatedUserId = getCurrentUserId();
         if (!authenticatedUserId.equals(userId)) {
-            throw new com.eaglebank.exception.ForbiddenException("You are not allowed to update this user's details.");
+            return new ResponseEntity<>(new ErrorResponse(userNotAllowedMessage), HttpStatus.FORBIDDEN);
         }
         UserResponse userResponse = userService.updateUser(userId, request);
         return ResponseEntity.ok(userResponse);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUserByID(@PathVariable String userId) {
+    public ResponseEntity<Response> deleteUserByID(@PathVariable String userId) {
         String authenticatedUserId = getCurrentUserId();
         if (!authenticatedUserId.equals(userId)) {
-            throw new com.eaglebank.exception.ForbiddenException("You are not allowed to delete this user.");
+            return new ResponseEntity<>(new ErrorResponse(userNotAllowedMessage), HttpStatus.FORBIDDEN);
         }
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();

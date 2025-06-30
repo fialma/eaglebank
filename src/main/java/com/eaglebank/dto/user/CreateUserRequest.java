@@ -1,11 +1,7 @@
 package com.eaglebank.dto.user;
 
-import com.eaglebank.entity.Address;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
@@ -14,7 +10,8 @@ public class CreateUserRequest {
     private String name;
 
     @Valid
-    private Address address;
+    @NotNull(message = "Address is required")
+    private AddressDTO address;
 
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid phone number format")

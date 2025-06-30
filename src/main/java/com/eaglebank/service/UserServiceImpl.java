@@ -3,12 +3,15 @@ package com.eaglebank.service;
 import com.eaglebank.dto.user.CreateUserRequest;
 import com.eaglebank.dto.user.UpdateUserRequest;
 import com.eaglebank.dto.user.UserResponse;
+import com.eaglebank.entity.Address;
 import com.eaglebank.entity.User;
 import com.eaglebank.exception.UserHasAccountsException;
 import com.eaglebank.exception.UserNotFoundException;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.UserRepository;
 import com.eaglebank.util.IdGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,9 @@ public class UserServiceImpl implements UserService{
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     public UserServiceImpl(UserRepository userRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
@@ -35,7 +41,8 @@ public class UserServiceImpl implements UserService{
         User user = new User();
         user.setId(IdGenerator.generateUserId());
         user.setName(request.getName());
-        user.setAddress(request.getAddress());
+
+        user.setAddress(objectMapper.convertValue(request.getAddress(), Address.class));
         user.setPhoneNumber(request.getPhoneNumber());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword())); // Hash the password
@@ -63,8 +70,8 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Optional.ofNullable(request.getName()).ifPresent(user::setName);
-        Optional.ofNullable(request.getAddress()).ifPresent(user::setAddress);
-        Optional.ofNullable(request.getPhoneNumber()).ifPresent(user::setPhoneNumber);
+        Optional.ofNullable(request.getAddress())
+                .ifPresent(addressDto -> user.setAddress(objectMapper.convertValue(addressDto, Address.class)));        Optional.ofNullable(request.getPhoneNumber()).ifPresent(user::setPhoneNumber);
         Optional.ofNullable(request.getEmail()).ifPresent(user::setEmail);
         user.setUpdatedTimestamp(LocalDateTime.now());
 
