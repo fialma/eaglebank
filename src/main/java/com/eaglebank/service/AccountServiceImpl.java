@@ -7,6 +7,7 @@ import com.eaglebank.dto.account.UpdateBankAccountRequest;
 import com.eaglebank.entity.Account;
 import com.eaglebank.entity.User;
 import com.eaglebank.exception.AccountNotFoundException;
+import com.eaglebank.exception.ForbiddenException;
 import com.eaglebank.exception.UserNotFoundException;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.UserRepository;
@@ -62,12 +63,10 @@ public class AccountServiceImpl implements AccountService {
         return response;
     }
 
-    public BankAccountResponse getAccountByAccountNumber(String accountNumber, String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
+    public BankAccountResponse getAccountByAccountNumber(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber));
         return mapToBankAccountResponse(account);
     }
 
@@ -76,8 +75,12 @@ public class AccountServiceImpl implements AccountService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber));
+
+        if(!account.getUser().getId().equals(userId)){
+            throw new ForbiddenException("You can only modify your accounts.");
+        }
 
         Optional.ofNullable(request.getName()).ifPresent(account::setName);
         Optional.ofNullable(request.getAccountType()).ifPresent(account::setAccountType);
@@ -92,8 +95,12 @@ public class AccountServiceImpl implements AccountService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber));
+
+        if(!account.getUser().getId().equals(userId)){
+            throw new ForbiddenException("You can only delete your accounts.");
+        }
 
         accountRepository.delete(account);
     }

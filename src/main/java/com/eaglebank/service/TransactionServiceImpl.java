@@ -6,10 +6,7 @@ import com.eaglebank.dto.transaction.TransactionResponse;
 import com.eaglebank.entity.Account;
 import com.eaglebank.entity.Transaction;
 import com.eaglebank.entity.User;
-import com.eaglebank.exception.AccountNotFoundException;
-import com.eaglebank.exception.InsufficientFundsException;
-import com.eaglebank.exception.TransactionNotFoundException;
-import com.eaglebank.exception.UserNotFoundException;
+import com.eaglebank.exception.*;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.TransactionRepository;
 import com.eaglebank.repository.UserRepository;
@@ -41,7 +38,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
+                .orElseThrow(() -> new AccountPerUserNotFoundException(accountNumber, userId));
 
         BigDecimal newBalance = account.getBalance();
         if (request.getType() == Transaction.TransactionType.deposit) {
@@ -75,7 +72,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException(accountNumber, userId));
+                .orElseThrow(() -> new AccountPerUserNotFoundException(accountNumber, userId));
 
         List<TransactionResponse> transactions = transactionRepository.findByAccount(account)
                 .stream()
@@ -91,7 +88,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountNotFoundException(accountNumber,userId));
+                .orElseThrow(() -> new AccountPerUserNotFoundException(accountNumber,userId));
 
         Transaction transaction = transactionRepository.findByIdAndAccount(transactionId, account)
                 .orElseThrow(() -> new TransactionNotFoundException(transactionId, accountNumber));

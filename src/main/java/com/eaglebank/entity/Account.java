@@ -45,7 +45,7 @@ public class Account {
     private List<Transaction> transactions;
 
     public enum AccountType {
-        personal
+        PERSONAL
     }
 
     public enum Currency {

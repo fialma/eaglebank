@@ -11,12 +11,10 @@ public interface AccountService {
 
     ListBankAccountsResponse listAccounts(String userId);
 
-    BankAccountResponse getAccountByAccountNumber(String accountNumber, String userId);
+    BankAccountResponse getAccountByAccountNumber(String accountNumber);
 
     BankAccountResponse updateAccount(String accountNumber, String userId, UpdateBankAccountRequest request);
 
     void deleteAccount(String accountNumber, String userId);
-
-
 
 }
