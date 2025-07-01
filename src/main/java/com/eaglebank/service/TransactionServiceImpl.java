@@ -34,14 +34,15 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional
     public TransactionResponse createTransaction(String accountNumber, String userId, CreateTransactionRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber));
 
-        Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountPerUserNotFoundException(accountNumber, userId));
+        if(!account.getUser().getId().equals(userId)){
+            throw new TransactionOnOtherUserAccountNotException();
+        }
 
         BigDecimal newBalance = account.getBalance();
-        if (request.getType() == Transaction.TransactionType.deposit) {
+        if (request.getType() == Transaction.TransactionType.DEPOSIT) {
             newBalance = newBalance.add(request.getAmount());
         } else { // withdrawal
             if (account.getBalance().compareTo(request.getAmount()) < 0) {
@@ -68,11 +69,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     public ListTransactionsResponse listAccountTransactions(String accountNumber, String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber));
 
-        Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountPerUserNotFoundException(accountNumber, userId));
+        if(!account.getUser().getId().equals(userId)){
+            throw new AccountDetailNotAllowedException();
+        }
 
         List<TransactionResponse> transactions = transactionRepository.findByAccount(account)
                 .stream()
@@ -84,11 +86,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     public TransactionResponse getAccountTransactionById(String accountNumber, String transactionId, String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException(accountNumber));
 
-        Account account = accountRepository.findByAccountNumberAndUser(accountNumber, user)
-                .orElseThrow(() -> new AccountPerUserNotFoundException(accountNumber,userId));
+        if(!account.getUser().getId().equals(userId)){
+            throw new AccountDetailNotAllowedException();
+        }
 
         Transaction transaction = transactionRepository.findByIdAndAccount(transactionId, account)
                 .orElseThrow(() -> new TransactionNotFoundException(transactionId, accountNumber));
