@@ -65,8 +65,8 @@ class AccountControllerIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        userRepository.deleteAll(); // Clean up before each test
         accountRepository.deleteAll();
+        userRepository.deleteAll(); // Clean up before each test
 
         // Create user 1
         User user1 = new User();
@@ -137,6 +137,7 @@ class AccountControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(accountRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("New Test Account"))
+                .andExpect(jsonPath("$.accountNumber").value(org.hamcrest.Matchers.startsWith("01")))
                 .andReturn();
         String responseJson = result.getResponse().getContentAsString();
 
