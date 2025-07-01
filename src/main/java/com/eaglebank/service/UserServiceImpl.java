@@ -8,12 +8,12 @@ import com.eaglebank.entity.User;
 import com.eaglebank.exception.UserHasAccountsException;
 import com.eaglebank.exception.UserNotFoundException;
 import com.eaglebank.exception.UserWithEmailNotFoundException;
+import com.eaglebank.exception.UserWithSameEmailAlreadyExistException;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.UserRepository;
 import com.eaglebank.util.IdGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +39,9 @@ public class UserServiceImpl implements UserService{
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
+        userRepository.findByEmail(request.getEmail())
+                .ifPresent(user -> { throw new UserWithSameEmailAlreadyExistException(); });
+
         User user = new User();
         user.setId(IdGenerator.generateUserId());
         user.setName(request.getName());

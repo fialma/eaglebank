@@ -1,13 +1,12 @@
 package com.eaglebank.dto.user;
 
-import com.eaglebank.dto.Response;
 import com.eaglebank.entity.Address;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class UserResponse extends Response {
+public class UserResponse {
     private String id;
     private String name;
     private Address address;

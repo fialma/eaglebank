@@ -2,10 +2,12 @@ package com.eaglebank.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+@Data
 public class AddressDTO {
 
     @NotBlank(message = "At least one line of address is required")

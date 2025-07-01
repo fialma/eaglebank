@@ -1,6 +1,5 @@
 package com.eaglebank.controller;
 
-import com.eaglebank.dto.Response;
 import com.eaglebank.dto.user.CreateUserRequest;
 import com.eaglebank.dto.user.UpdateUserRequest;
 import com.eaglebank.dto.user.UserResponse;
@@ -35,7 +34,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Response> fetchUserByID(@PathVariable String userId) {
+    public ResponseEntity<UserResponse> fetchUserByID(@PathVariable String userId) {
         String authenticatedUserId = securityUtil.getCurrentUserId();
         if (!authenticatedUserId.equals(userId)) {
             throw new UserDetailNotAllowedException();
@@ -45,7 +44,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Response> updateUserByID(@PathVariable String userId, @Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<UserResponse> updateUserByID(@PathVariable String userId, @Valid @RequestBody UpdateUserRequest request) {
         String authenticatedUserId = securityUtil.getCurrentUserId();
         if (!authenticatedUserId.equals(userId)) {
             throw new UserDetailNotAllowedException();
@@ -55,7 +54,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Response> deleteUserByID(@PathVariable String userId) {
+    public ResponseEntity<UserResponse> deleteUserByID(@PathVariable String userId) {
         String authenticatedUserId = securityUtil.getCurrentUserId();
         if (!authenticatedUserId.equals(userId)) {
             throw new UserDetailNotAllowedException();
