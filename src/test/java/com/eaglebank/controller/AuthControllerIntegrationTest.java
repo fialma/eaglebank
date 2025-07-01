@@ -1,5 +1,6 @@
 package com.eaglebank.controller;
 
+import com.eaglebank.TestcontainersInitializer;
 import com.eaglebank.dto.auth.AuthRequest;
 import com.eaglebank.dto.auth.AuthResponse;
 import com.eaglebank.entity.Address;
@@ -10,19 +11,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -33,15 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test") // Use a dedicated test profile for H2
 @Transactional // Rollback transactions after each test
-@Testcontainers
+@ContextConfiguration(initializers = TestcontainersInitializer.class)
 class AuthControllerIntegrationTest {
-
-    @Container
-    @ServiceConnection
-    public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres");
-
-    @Value("${local.server.port}")
-    private int port;
 
     @Autowired
     private MockMvc mockMvc;
