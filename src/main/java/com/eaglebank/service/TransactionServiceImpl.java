@@ -5,7 +5,6 @@ import com.eaglebank.dto.transaction.ListTransactionsResponse;
 import com.eaglebank.dto.transaction.TransactionResponse;
 import com.eaglebank.entity.Account;
 import com.eaglebank.entity.Transaction;
-import com.eaglebank.entity.User;
 import com.eaglebank.exception.*;
 import com.eaglebank.repository.AccountRepository;
 import com.eaglebank.repository.TransactionRepository;

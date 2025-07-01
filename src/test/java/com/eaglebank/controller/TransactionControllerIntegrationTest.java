@@ -1,10 +1,6 @@
 package com.eaglebank.controller;
 
 import com.eaglebank.TestcontainersInitializer;
-import com.eaglebank.dto.account.BankAccountResponse;
-import com.eaglebank.dto.account.CreateBankAccountRequest;
-import com.eaglebank.dto.account.ListBankAccountsResponse;
-import com.eaglebank.dto.account.UpdateBankAccountRequest;
 import com.eaglebank.dto.auth.AuthRequest;
 import com.eaglebank.dto.auth.AuthResponse;
 import com.eaglebank.dto.error.BadRequestErrorResponse;
