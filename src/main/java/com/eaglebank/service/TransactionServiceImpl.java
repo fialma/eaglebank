@@ -33,7 +33,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional
     public TransactionResponse createTransaction(String accountNumber, String userId, CreateTransactionRequest request) {
-        Account account = accountRepository.findByAccountNumber(accountNumber)
+        Account account = accountRepository.findByAccountNumberForUpdate(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException(accountNumber));
 
         if(!account.getUser().getId().equals(userId)){
