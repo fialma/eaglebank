@@ -1,6 +1,4 @@
 # eaglebank
-Assignment for Barclays
-
 
 Requirements:
 Maven (to compile)
